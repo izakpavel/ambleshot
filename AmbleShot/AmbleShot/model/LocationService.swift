@@ -41,10 +41,16 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
         return false
     }
     
-    func start() {
+    func toggle() {
         if (running) {
             stop()
         }
+        else {
+            start()
+        }
+    }
+    
+    func start() {
         if isAllowedToWorkInBackground() {
             locationManager.startUpdatingLocation()
             running = true

@@ -32,6 +32,17 @@ struct ShotView: View {
 
 struct ShotListView: View {
     @EnvironmentObject var locationService: LocationService
+    
+    var toggleButton: some View {
+        Button(action: {
+            self.locationService.toggle()
+            
+        }) {
+            Text(self.locationService.running ? "Stop" : "Start")
+                .padding()
+        }
+    }
+    
     var body: some View {
         NavigationView {
             List(self.locationService.shots, id: \.id) { shot in
@@ -39,6 +50,7 @@ struct ShotListView: View {
             }
             .listStyle(PlainListStyle())
             .navigationBarTitle(Text("AmbleShot"))
+            .navigationBarItems(trailing: toggleButton)
         }
         
     }
