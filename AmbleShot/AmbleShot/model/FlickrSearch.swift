@@ -23,12 +23,24 @@ class FlickrSearch {
     let apiKey = "b3ed5f78045e00d6d770122978a1bb8a"
     let endpoint = "https://api.flickr.com/services/rest"
     let searchMethod = "flickr.photos.search"
-    let imageFormat = "https://farm%@.staticflickr.com/%@/%@_%@.jpg"
     let radius = 0.1
     let perPage = 1
     let geoContext = 2 // outdoors only
     
     let defaultSession = URLSession(configuration: .default)
+    
+    func imagePathFrom(jsonDict: [String:Any]? ) -> String?{
+        let farm = jsonDict?["farm"] as? Int
+        let id = jsonDict?["id"] as? String
+        let secret = jsonDict?["secret"] as? String
+        let server = jsonDict?["server"] as? String
+        
+        if let id=id, let farm=farm, let secret=secret, let server=server {
+            let path = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
+            return path
+        }
+        return nil
+    }
     
     func searchForImagesAround(lng: Double, lat:Double) {
         //var dataTask: URLSessionDataTask?
@@ -49,8 +61,13 @@ class FlickrSearch {
                         return
                     }
                     do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
-                        print (json)
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        let photosDict = json?["photos"] as? [String: Any]
+                        if let photoArray = photosDict?["photo"] as? NSArray {
+                            let firstPhoto = photoArray.firstObject as? [String: Any]
+                            let imagePath = self.imagePathFrom(jsonDict: firstPhoto)
+                            // TODO download image
+                        }
                     }
                     catch let error as NSError {
                         print(error.debugDescription)
