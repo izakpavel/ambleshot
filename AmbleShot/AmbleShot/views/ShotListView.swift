@@ -24,6 +24,7 @@ struct ShotView: View {
         }
         .background(Color.green)
         .cornerRadius(20)
+        .frame(height: 200)
     }
 }
 
@@ -32,12 +33,14 @@ struct ShotView: View {
 struct ShotListView: View {
     @EnvironmentObject var locationService: LocationService
     var body: some View {
-        VStack {
-            ForEach (self.locationService.shots) { shot in
+        NavigationView {
+            List(self.locationService.shots, id: \.id) { shot in
                 ShotView(shot: shot)
-                    .padding()
             }
+            .listStyle(PlainListStyle())
+            .navigationBarTitle(Text("AmbleShot"))
         }
+        
     }
 }
 
