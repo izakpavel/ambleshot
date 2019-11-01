@@ -15,6 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let search = FlickrSearch()
+        search.searchForImagesAround(lng: 15.9392406, lat: 49.5626336)
+        
         return true
     }
 
