@@ -54,6 +54,7 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
         if isAllowedToWorkInBackground() {
             locationManager.startUpdatingLocation()
             running = true
+            shots = []
         }
     }
     
@@ -65,6 +66,15 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
     /// Location delegate functions
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        print(locations)
+        var newShots:[Shot] = []
+        var index = self.shots.count
+        
+        for location in locations {
+            let shot = Shot(id: index, lat: location.coordinate.latitude, lng: location.coordinate.longitude)
+            newShots.append(shot)
+            index += 1
+        }
+        
+        self.shots.insert(contentsOf: newShots, at: 0)
     }
 }
