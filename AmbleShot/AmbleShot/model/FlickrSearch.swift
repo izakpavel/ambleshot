@@ -20,16 +20,12 @@ import Foundation
 
 
 class FlickrSearch {
-    let apiKey = "b3ed5f78045e00d6d770122978a1bb8a"
-    let endpoint = "https://api.flickr.com/services/rest"
-    let searchMethod = "flickr.photos.search"
-    let radius = 0.1
-    let perPage = 1
-    let geoContext = 2 // outdoors only
+    static let apiKey = "b3ed5f78045e00d6d770122978a1bb8a"
+    static let endpoint = "https://api.flickr.com/services/rest"
     
     let defaultSession = URLSession(configuration: .default)
     
-    func imagePathFrom(jsonDict: [String:Any]? ) -> String?{
+    static func imagePathFrom(jsonDict: [String:Any]? ) -> String?{
         let farm = jsonDict?["farm"] as? Int
         let id = jsonDict?["id"] as? String
         let secret = jsonDict?["secret"] as? String
@@ -42,15 +38,24 @@ class FlickrSearch {
         return nil
     }
     
-    func searchForImagesAround(lng: Double, lat:Double) {
-        //var dataTask: URLSessionDataTask?
+    static func searchUrl(lng: Double, lat:Double) -> URL?{
+        let searchMethod = "flickr.photos.search"
+        let radius = 0.1
+        let perPage = 1
+        let geoContext = 2 // outdoors only
+        
         if var urlComponents = URLComponents(string: endpoint) {
             urlComponents.query = "method=\(searchMethod)&api_key=\(apiKey)&format=json&geo_context=\(geoContext)&radius=\(radius)&lat=\(lat)&lon=\(lng)&per_page=\(perPage)&nojsoncallback=1"
-            
-            guard let requestUrl = urlComponents.url else {
-              return
-            }
-            let task = defaultSession.dataTask(with: requestUrl){
+        
+            return urlComponents.url
+        }
+        return nil
+    }
+    
+    func searchForImagesAround(lng: Double, lat:Double) {
+        //var dataTask: URLSessionDataTask?
+        if let url =  FlickrSearch.searchUrl(lng: lng, lat: lat) {
+            let task = defaultSession.dataTask(with: url){
                  (data, response, error) in
                  if let error = error {
                     print(error.localizedDescription)
@@ -65,7 +70,7 @@ class FlickrSearch {
                         let photosDict = json?["photos"] as? [String: Any]
                         if let photoArray = photosDict?["photo"] as? NSArray {
                             let firstPhoto = photoArray.firstObject as? [String: Any]
-                            let imagePath = self.imagePathFrom(jsonDict: firstPhoto)
+                            let imagePath = FlickrSearch.imagePathFrom(jsonDict: firstPhoto)
                             // TODO download image
                         }
                     }
