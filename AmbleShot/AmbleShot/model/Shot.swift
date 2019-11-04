@@ -111,4 +111,8 @@ class Shot : Identifiable, Codable, ObservableObject{
     func formattedLocation()->String {
         return "[\(self.lng),\(self.lat)]"
     }
+    
+    func noImageAvailable()->Bool {
+        return (self.state == .loaded && self.imageFilename == "NONE")
+    }
 }

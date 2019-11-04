@@ -71,7 +71,9 @@ struct ShotListView: View {
         
         return NavigationView {
             List(self.locationService.shots, id: \.id) { shot in
-                ShotView(shot: shot)
+                NavigationLink(destination: ShotDetailView(shot: shot)) {
+                    ShotView(shot: shot)
+                }
             }
             .listStyle(PlainListStyle())
             .listRowInsets(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5))
