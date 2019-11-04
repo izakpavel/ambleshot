@@ -9,20 +9,25 @@
 import SwiftUI
 
 struct ShotView: View {
-    var shot: Shot
+    @ObservedObject var shot: Shot
+    
     var body: some View {
         VStack {
             Spacer()
             HStack{
-                Text(self.shot.displayName())
+                Text(self.shot.state == .loading ? "LOADING" : self.shot.displayName())
                     .padding()
                 Spacer()
                 Text(self.shot.formattedLocation())
                     .padding()
             }
-            .background(Color.gray)
+            .background(Color.primary.colorInvert().opacity(0.5))
         }
-        .background(Color.green)
+        .background(
+            Image(uiImage: UIImage(contentsOfFile: self.shot.fullImagePath() ?? "") ?? UIImage())
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        )
         .cornerRadius(20)
         .frame(height: 200)
     }

@@ -95,7 +95,7 @@ class FlickrSearch {
         return nil
     }
     
-    /* classic callback based approach, decided not to go this way
+    /* classic callback-based approach, decided not to go this way and used mainly for debugging
     func searchForImagesAround(lng: Double, lat:Double) {
         //var dataTask: URLSessionDataTask?
         if let url =  FlickrSearch.searchUrl(lng: lng, lat: lat) {
@@ -127,7 +127,7 @@ class FlickrSearch {
         }
     }*/
     
-    static func locationPhotosPublisher(lng: Double, lat: Double) -> AnyPublisher<FlickrResponse, Error>{
+    static func locationPhotosDescriptionPublisher(lng: Double, lat: Double) -> AnyPublisher<FlickrResponse, Error>{
         let url = FlickrSearch.searchUrl(lng: lng, lat: lat)
         return URLSession.shared.dataTaskPublisher(for: url!)
                 .print("location Photos")
@@ -144,6 +144,26 @@ class FlickrSearch {
             .mapError { $0 as Error }
             .map { $0.data }
             .map { UIImage(data: $0)!}
+            .eraseToAnyPublisher()
+    }
+    
+    static func placeImageFilePublisher(urlPath: String?) -> AnyPublisher<String?, Error> {
+        let url = URL(string: urlPath ?? "")!
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .print("place Image")
+            .mapError { $0 as Error }
+            .map { $0.data }
+            .map {
+                FilesystemHelper.saveDataImage(data: $0, filename: url.lastPathComponent)
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    static func locationPhotoPublisher(lng: Double, lat: Double) -> AnyPublisher<String?, Error> {
+       return locationPhotosDescriptionPublisher(lng: lng, lat: lat)
+            .flatMap { (response) -> AnyPublisher<String?, Error> in
+                return placeImageFilePublisher(urlPath: response.firstPhotoPath())
+            }
             .eraseToAnyPublisher()
     }
 }

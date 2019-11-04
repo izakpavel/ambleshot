@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 enum ShotState : Int, Codable {
     case justLocation = 0
@@ -18,14 +19,17 @@ class Shot : Identifiable, Codable, ObservableObject{
     let id: Int // unique identifier
     let lat: Double
     let lng: Double
-    var imageUrl: String?
+    @Published var imageFilename: String?
     @Published var state : ShotState
+
+    
+    private var loadSubscriber: AnyCancellable? = nil
     
     init(id: Int, lat: Double, lng: Double) {
         self.id = id
         self.lat = lat
         self.lng = lng
-        self.imageUrl = nil
+        self.imageFilename = nil
         self.state = .justLocation
     }
     
@@ -33,7 +37,7 @@ class Shot : Identifiable, Codable, ObservableObject{
         case id
         case lat
         case lng
-        case imageUrl
+        case imageFilename
         case state
     }
     
@@ -44,7 +48,7 @@ class Shot : Identifiable, Codable, ObservableObject{
         self.id = try values.decode(Int.self, forKey: .id)
         self.lat = try values.decode(Double.self, forKey: .lat)
         self.lng = try values.decode(Double.self, forKey: .lng)
-        self.imageUrl = try values.decode(String.self, forKey: .imageUrl)
+        self.imageFilename = try values.decode(String.self, forKey: .imageFilename)
         self.state = try values.decode(ShotState.self, forKey: .state)
     }
     
@@ -53,12 +57,35 @@ class Shot : Identifiable, Codable, ObservableObject{
         try container.encode(id, forKey: .id)
         try container.encode(lat, forKey: .lat)
         try container.encode(lng, forKey: .lng)
-        try container.encode(imageUrl, forKey: .imageUrl)
+        try container.encode(imageFilename, forKey: .imageFilename)
         try container.encode(state, forKey: .state)
     }
     
-    func imageName()->String {
-        return "shot_\(id)"
+    func loadImage() {
+        self.loadSubscriber = FlickrSearch.locationPhotoPublisher(lng: 15.9392406, lat: 49.5626336)
+            .receive(on: RunLoop.main)
+            .handleEvents(receiveSubscription: { _ in
+                self.state = ShotState.loading
+            }, receiveCompletion: { _ in
+                self.state = ShotState.loaded
+            }, receiveCancel: {
+                self.state = ShotState.justLocation
+            })
+            .mapError { $0 as Error }
+            .sink(receiveCompletion: { (completion) in
+                print ("sinkCompletion")
+            }, receiveValue: {
+                print ("stored to:\($0)")
+                self.imageFilename = $0
+            })
+    }
+    
+    func fullImagePath()->String? {
+        if let filename = self.imageFilename {
+            let url = FilesystemHelper.fileURL(filename: filename)
+            return url?.path
+        }
+        return nil
     }
     
     func displayName()->String {

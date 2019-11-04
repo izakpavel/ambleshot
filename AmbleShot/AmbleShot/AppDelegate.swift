@@ -13,37 +13,15 @@ import Combine
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let search = FlickrSearch()
     
-    var response : FlickrResponse? = nil {
-        didSet {
-            FlickrSearch.placeImagePublisher(urlPath: response?.firstPhotoPath())
-            .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { (completion) in
-                print ("sinkCompletion")
-            }, receiveValue: {
-                print ($0)
-            })
-            .store(in: &self.subscriptions)
-        }
-    }
+    var retImageFilename : String? = nil
+    
+   
     private var subscriptions = Set<AnyCancellable>()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        FlickrSearch.locationPhotosPublisher(lng: 15.9392406, lat: 49.5626336)
-            .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { (completion) in
-                switch completion {
-                    case .finished:
-                        break
-                    case .failure(let error):
-                        print("received error: ", error)
-                }
-            }, receiveValue: {
-                self.response = $0
-                print ($0)
-            })
-            .store(in: &self.subscriptions)
+       
         
         return true
     }

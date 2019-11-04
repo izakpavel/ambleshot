@@ -72,6 +72,7 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
         for location in locations {
             let shot = Shot(id: index, lat: location.coordinate.latitude, lng: location.coordinate.longitude)
             newShots.append(shot)
+            shot.loadImage()
             index += 1
         }
         
