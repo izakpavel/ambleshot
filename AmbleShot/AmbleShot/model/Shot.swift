@@ -82,7 +82,15 @@ class Shot : Identifiable, Codable, ObservableObject{
             })
             .mapError { $0 as Error }
             .sink(receiveCompletion: { (completion) in
-                self.state = ShotState.justLocation
+                switch completion {
+                case .finished:
+                    self.state = ShotState.loaded
+                    break
+                case .failure(let anError):
+                    print("subscriber received the error: ", anError)
+                    self.state = ShotState.justLocation
+                    break
+                }
             }, receiveValue: {
                 self.imageFilename = $0
             })
