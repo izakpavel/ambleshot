@@ -16,7 +16,7 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
     private var locationManager : CLLocationManager
     
     override init() {
-        self.shots = [Shot(id: 0, lat: 13.123, lng: 17.456), Shot(id: 1, lat: -13.123, lng: 17.456), Shot(id: 2, lat: 13.123, lng: -17.456)] // DEBUG ONLY
+        self.shots = []//[Shot(id: 0, lat: 13.123, lng: 17.456), Shot(id: 1, lat: -13.123, lng: 17.456), Shot(id: 2, lat: 13.123, lng: -17.456)] // DEBUG ONLY
         self.running = false
         self.locationManager = CLLocationManager()
         

@@ -8,6 +8,21 @@
 
 import SwiftUI
 
+struct EmptyView: View {
+    var body: some View {
+        VStack {
+            Spacer()
+            Image("placeholder")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .padding()
+            Text("No images loaded yet. Press start to launch tracking")
+                .padding()
+            Spacer()
+        }
+    }
+}
+
 struct ShotView: View {
     @ObservedObject var shot: Shot
     
@@ -24,7 +39,7 @@ struct ShotView: View {
             .background(Color.primary.colorInvert().opacity(0.5))
         }
         .background(
-            Image(uiImage: UIImage(contentsOfFile: self.shot.fullImagePath() ?? "") ?? UIImage())
+            Image(uiImage: UIImage(contentsOfFile: self.shot.fullImagePath() ?? "") ?? UIImage(named: "placeholder")!)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
         )
@@ -49,13 +64,16 @@ struct ShotListView: View {
     }
     
     var body: some View {
-        NavigationView {
+        let emptyBackground = EmptyView().opacity(self.locationService.shots.isEmpty ? 1 : 0)
+        
+        return NavigationView {
             List(self.locationService.shots, id: \.id) { shot in
                 ShotView(shot: shot)
             }
             .listStyle(PlainListStyle())
             .navigationBarTitle(Text("AmbleShot"))
             .navigationBarItems(trailing: toggleButton)
+            .overlay(emptyBackground)
         }
         
     }
