@@ -16,14 +16,55 @@
 //  https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}.jpg
 
 import Foundation
+import Combine
+import SwiftUI
 
+enum FlickrError : Error {
+    case error(_ error:String)
+}
+
+
+/// response classes
+
+class FlickrResponse : Codable {
+    var photos: FlickrPhotos
+    var stat: String
+    
+    func firstPhotoPath() -> String?{
+        if let firstPhoto = photos.photo.first {
+            return firstPhoto.imagePath()
+        }
+        return nil
+    }
+}
+
+class FlickrPhotos : Codable {
+    var page: Int
+    var pages: Int
+    var perpage: Int
+    var total: String
+    var photo: [FlickrPhoto]
+}
+
+class FlickrPhoto : Codable {
+    var id: String
+    var owner: String
+    var secret: String
+    var server: String
+    var farm: Int
+    var title: String
+    var ispublic: Int
+    var isfriend: Int
+    var isfamily: Int
+    
+    func imagePath()->String {
+        let path = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
+        return path
+    }
+}
 
 
 class FlickrSearch {
-    static let apiKey = "b3ed5f78045e00d6d770122978a1bb8a"
-    static let endpoint = "https://api.flickr.com/services/rest"
-    
-    let defaultSession = URLSession(configuration: .default)
     
     static func imagePathFrom(jsonDict: [String:Any]? ) -> String?{
         let farm = jsonDict?["farm"] as? Int
@@ -39,6 +80,8 @@ class FlickrSearch {
     }
     
     static func searchUrl(lng: Double, lat:Double) -> URL?{
+        let apiKey = "b3ed5f78045e00d6d770122978a1bb8a"
+        let endpoint = "https://api.flickr.com/services/rest"
         let searchMethod = "flickr.photos.search"
         let radius = 0.1
         let perPage = 1
@@ -52,6 +95,7 @@ class FlickrSearch {
         return nil
     }
     
+    /* classic callback based approach, decided not to go this way
     func searchForImagesAround(lng: Double, lat:Double) {
         //var dataTask: URLSessionDataTask?
         if let url =  FlickrSearch.searchUrl(lng: lng, lat: lat) {
@@ -81,5 +125,25 @@ class FlickrSearch {
             }
             task.resume()
         }
+    }*/
+    
+    static func locationPhotosPublisher(lng: Double, lat: Double) -> AnyPublisher<FlickrResponse, Error>{
+        let url = FlickrSearch.searchUrl(lng: lng, lat: lat)
+        return URLSession.shared.dataTaskPublisher(for: url!)
+                .print("location Photos")
+                .mapError { $0 as Error }
+                .map { $0.data }
+                .decode(type: FlickrResponse.self, decoder: JSONDecoder())
+                .eraseToAnyPublisher()
+    }
+    
+    static func placeImagePublisher(urlPath: String?) -> AnyPublisher<UIImage, Error> {
+        let url = URL(string: urlPath ?? "")!
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .print("place Image")
+            .mapError { $0 as Error }
+            .map { $0.data }
+            .map { UIImage(data: $0)!}
+            .eraseToAnyPublisher()
     }
 }
