@@ -83,7 +83,7 @@ public class FilesystemHelper {
     static func saveDataImage(data: Data, filename: String) -> String? {
         if let url = FilesystemHelper.fileURL(filename: filename) {
             do {
-                print (url.path)
+                //print (url.path)
                 try data.write(to: url)
                 return filename
             }

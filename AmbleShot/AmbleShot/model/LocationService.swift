@@ -115,7 +115,11 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate, C
         self.save()
     }
     
+    func loadUnloadedImages() {
+        self.shots.filter{ $0.state == .justLocation }.map { $0.loadImage() }
+    }
+    
     func save() {
-        print (FilesystemHelper.store(self, filename: LocationService.filename))
+        FilesystemHelper.store(self, filename: LocationService.filename)
     }
 }

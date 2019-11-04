@@ -68,6 +68,9 @@ class Shot : Identifiable, Codable, ObservableObject{
     }
     
     func loadImage() {
+        if let currentSubscriber = self.loadSubscriber {
+            currentSubscriber.cancel()
+        }
         self.loadSubscriber = FlickrSearch.locationPhotoPublisher(lng: self.lng, lat: self.lat)
             .receive(on: RunLoop.main)
             .handleEvents(receiveSubscription: { _ in
