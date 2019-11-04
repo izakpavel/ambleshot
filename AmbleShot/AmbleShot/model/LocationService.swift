@@ -91,13 +91,24 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate, C
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         var newShots:[Shot] = []
-        var index = self.shots.count
+        var shotId = self.shots.count
         
-        for location in locations {
-            let shot = Shot(id: index, lat: location.coordinate.latitude, lng: location.coordinate.longitude)
-            newShots.append(shot)
-            shot.loadImage()
-            index += 1
+        for (index, location) in locations.enumerated() {
+            var sameLocation = false
+            if let previousShot = self.shots.first { // filtering out duplicate locations
+                if (index==0) {
+                    let eps = 1e-6
+                    let dLat = abs(previousShot.lat-location.coordinate.latitude)
+                    let dLng = abs(previousShot.lng-location.coordinate.longitude)
+                    sameLocation = (dLat<eps && dLng<eps)
+                }
+            }
+            if (!sameLocation) {
+                let shot = Shot(id: shotId, lat: location.coordinate.latitude, lng: location.coordinate.longitude)
+                newShots.append(shot)
+                shot.loadImage()
+                shotId += 1
+            }
         }
         
         self.shots.insert(contentsOf: newShots, at: 0)

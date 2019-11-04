@@ -15,6 +15,7 @@ struct EmptyView: View {
             Image("placeholder")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
+                .clipShape(Ellipse())
                 .padding()
             Text("No images loaded yet")
                 .padding()

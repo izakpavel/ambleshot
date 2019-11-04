@@ -20,11 +20,7 @@ class Shot : Identifiable, Codable, ObservableObject{
     let lat: Double
     let lng: Double
     @Published var imageFilename: String?
-    @Published var state : ShotState {
-        didSet {
-            print ("aa")
-        }
-    }
+    @Published var state : ShotState
 
     
     private var loadSubscriber: AnyCancellable? = nil
