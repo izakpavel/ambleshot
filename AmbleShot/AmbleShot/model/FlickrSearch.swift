@@ -83,7 +83,7 @@ class FlickrSearch {
         let apiKey = "b3ed5f78045e00d6d770122978a1bb8a"
         let endpoint = "https://api.flickr.com/services/rest"
         let searchMethod = "flickr.photos.search"
-        let radius = 0.1
+        let radius = 0.05
         let perPage = 1
         let geoContext = 2 // outdoors only
         
@@ -95,74 +95,42 @@ class FlickrSearch {
         return nil
     }
     
-    /* classic callback-based approach, decided not to go this way and used mainly for debugging
-    func searchForImagesAround(lng: Double, lat:Double) {
-        //var dataTask: URLSessionDataTask?
-        if let url =  FlickrSearch.searchUrl(lng: lng, lat: lat) {
-            let task = defaultSession.dataTask(with: url){
-                 (data, response, error) in
-                 if let error = error {
-                    print(error.localizedDescription)
-                 } else {
-                    guard let data = data else {
-                        // missing data
-                        print ("no data recieved")
-                        return
-                    }
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        let photosDict = json?["photos"] as? [String: Any]
-                        if let photoArray = photosDict?["photo"] as? NSArray {
-                            let firstPhoto = photoArray.firstObject as? [String: Any]
-                            let imagePath = FlickrSearch.imagePathFrom(jsonDict: firstPhoto)
-                            // TODO download image
-                        }
-                    }
-                    catch let error as NSError {
-                        print(error.debugDescription)
-                    }
-                 }
-            }
-            task.resume()
-        }
-    }*/
-    
     static func locationPhotosDescriptionPublisher(lng: Double, lat: Double) -> AnyPublisher<FlickrResponse, Error>{
         let url = FlickrSearch.searchUrl(lng: lng, lat: lat)
         return URLSession.shared.dataTaskPublisher(for: url!)
-                .print("location Photos")
+                .print("location photos")
                 .mapError { $0 as Error }
                 .map { $0.data }
                 .decode(type: FlickrResponse.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
     }
     
-    static func placeImagePublisher(urlPath: String?) -> AnyPublisher<UIImage, Error> {
-        let url = URL(string: urlPath ?? "")!
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .print("place Image")
-            .mapError { $0 as Error }
-            .map { $0.data }
-            .map { UIImage(data: $0)!}
-            .eraseToAnyPublisher()
-    }
-    
     static func placeImageFilePublisher(urlPath: String?) -> AnyPublisher<String?, Error> {
-        let url = URL(string: urlPath ?? "")!
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .print("place Image")
-            .mapError { $0 as Error }
-            .map { $0.data }
-            .map {
-                FilesystemHelper.saveDataImage(data: $0, filename: url.lastPathComponent)
-            }
-            .eraseToAnyPublisher()
+        if let url = URL(string: urlPath ?? "") {
+            return URLSession.shared.dataTaskPublisher(for: url)
+                .print("place image")
+                .mapError { $0 as Error }
+                .map { $0.data }
+                .map {
+                    FilesystemHelper.saveDataImage(data: $0, filename: url.lastPathComponent)
+                }
+                .eraseToAnyPublisher()
+        }
+        else {
+            return Result.Publisher("NONE").eraseToAnyPublisher()
+        }
     }
     
     static func locationPhotoPublisher(lng: Double, lat: Double) -> AnyPublisher<String?, Error> {
-       return locationPhotosDescriptionPublisher(lng: lng, lat: lat)
-            .flatMap { (response) -> AnyPublisher<String?, Error> in
-                return placeImageFilePublisher(urlPath: response.firstPhotoPath())
+       return locationPhotosDescriptionPublisher(lng: lng, lat: lat)//-122.02629649, lat: 37.32643691)
+            .map {
+                if let urlPath = $0.firstPhotoPath() {
+                    return urlPath
+                }
+                return ""
+            }
+            .flatMap { (urlPath) -> AnyPublisher<String?, Error> in
+                return placeImageFilePublisher(urlPath: urlPath)
             }
             .eraseToAnyPublisher()
     }

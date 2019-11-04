@@ -62,7 +62,7 @@ class Shot : Identifiable, Codable, ObservableObject{
     }
     
     func loadImage() {
-        self.loadSubscriber = FlickrSearch.locationPhotoPublisher(lng: 15.9392406, lat: 49.5626336)
+        self.loadSubscriber = FlickrSearch.locationPhotoPublisher(lng: self.lng, lat: self.lat)
             .receive(on: RunLoop.main)
             .handleEvents(receiveSubscription: { _ in
                 self.state = ShotState.loading
@@ -73,9 +73,8 @@ class Shot : Identifiable, Codable, ObservableObject{
             })
             .mapError { $0 as Error }
             .sink(receiveCompletion: { (completion) in
-                print ("sinkCompletion")
+                self.state = ShotState.justLocation
             }, receiveValue: {
-                print ("stored to:\($0)")
                 self.imageFilename = $0
             })
     }

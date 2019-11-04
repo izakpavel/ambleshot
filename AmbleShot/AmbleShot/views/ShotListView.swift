@@ -16,7 +16,9 @@ struct EmptyView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .padding()
-            Text("No images loaded yet. Press start to launch tracking")
+            Text("No images loaded yet")
+                .padding()
+            Text("Press start to launch tracking")
                 .padding()
             Spacer()
         }
