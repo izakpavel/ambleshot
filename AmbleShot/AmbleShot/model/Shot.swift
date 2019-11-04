@@ -20,7 +20,11 @@ class Shot : Identifiable, Codable, ObservableObject{
     let lat: Double
     let lng: Double
     @Published var imageFilename: String?
-    @Published var state : ShotState
+    @Published var state : ShotState {
+        didSet {
+            print ("aa")
+        }
+    }
 
     
     private var loadSubscriber: AnyCancellable? = nil
@@ -48,7 +52,13 @@ class Shot : Identifiable, Codable, ObservableObject{
         self.id = try values.decode(Int.self, forKey: .id)
         self.lat = try values.decode(Double.self, forKey: .lat)
         self.lng = try values.decode(Double.self, forKey: .lng)
-        self.imageFilename = try values.decode(String.self, forKey: .imageFilename)
+        do {
+            self.imageFilename = try values.decode(String.self, forKey: .imageFilename)
+        }
+        catch {
+           self.imageFilename = nil
+        }
+        
         self.state = try values.decode(ShotState.self, forKey: .state)
     }
     

@@ -73,6 +73,7 @@ struct ShotListView: View {
                 ShotView(shot: shot)
             }
             .listStyle(PlainListStyle())
+            .listRowInsets(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5))
             .navigationBarTitle(Text("AmbleShot"))
             .navigationBarItems(trailing: toggleButton)
             .overlay(emptyBackground)

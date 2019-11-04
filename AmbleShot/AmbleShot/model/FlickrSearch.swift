@@ -98,7 +98,6 @@ class FlickrSearch {
     static func locationPhotosDescriptionPublisher(lng: Double, lat: Double) -> AnyPublisher<FlickrResponse, Error>{
         let url = FlickrSearch.searchUrl(lng: lng, lat: lat)
         return URLSession.shared.dataTaskPublisher(for: url!)
-                .print("location photos")
                 .mapError { $0 as Error }
                 .map { $0.data }
                 .decode(type: FlickrResponse.self, decoder: JSONDecoder())
@@ -108,7 +107,6 @@ class FlickrSearch {
     static func placeImageFilePublisher(urlPath: String?) -> AnyPublisher<String?, Error> {
         if let url = URL(string: urlPath ?? "") {
             return URLSession.shared.dataTaskPublisher(for: url)
-                .print("place image")
                 .mapError { $0 as Error }
                 .map { $0.data }
                 .map {

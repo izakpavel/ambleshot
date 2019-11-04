@@ -44,7 +44,7 @@ public class FilesystemHelper {
      }
  
     /// Retrieve and convert a struct from a file on disk
-    static func retrieve<T: Decodable>(_ filename: String, fileExtension: String, as type: T.Type) -> T? {
+    static func retrieve<T: Decodable>(_ filename: String, as type: T.Type) -> T? {
          if let url = fileURL(filename: filename) {
          
              if !FileManager.default.fileExists(atPath: url.path) {
@@ -83,6 +83,7 @@ public class FilesystemHelper {
     static func saveDataImage(data: Data, filename: String) -> String? {
         if let url = FilesystemHelper.fileURL(filename: filename) {
             do {
+                print (url.path)
                 try data.write(to: url)
                 return filename
             }

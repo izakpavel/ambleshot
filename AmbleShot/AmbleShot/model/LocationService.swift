@@ -9,14 +9,17 @@
 import Foundation
 import CoreLocation
 
-class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
+
+
+class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate, Codable {
     @Published var shots: [Shot]
     @Published var running: Bool
    
     private var locationManager : CLLocationManager
+    static let filename = "shots.json"
     
     override init() {
-        self.shots = []//[Shot(id: 0, lat: 13.123, lng: 17.456), Shot(id: 1, lat: -13.123, lng: 17.456), Shot(id: 2, lat: 13.123, lng: -17.456)] // DEBUG ONLY
+        self.shots = []
         self.running = false
         self.locationManager = CLLocationManager()
         
@@ -24,6 +27,27 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
         
         self.setupLocationManager()
     }
+    
+    enum CodingKeys: String, CodingKey {
+           case shots
+    }
+       
+   required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.shots = try values.decode([Shot].self, forKey: .shots)
+    
+        self.running = false
+        self.locationManager = CLLocationManager()
+    
+        super.init()
+    
+        self.setupLocationManager()
+   }
+       
+   func encode(to encoder: Encoder) throws {
+       var container = encoder.container(keyedBy: CodingKeys.self)
+       try container.encode(shots, forKey: .shots)
+   }
     
     func setupLocationManager(){
         locationManager.requestAlwaysAuthorization()
@@ -36,7 +60,7 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
     func isAllowedToWorkInBackground() -> Bool{
         if CLLocationManager.locationServicesEnabled() {
             let authStatus = CLLocationManager.authorizationStatus()
-            return authStatus == .authorizedAlways
+            return authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse
         }
         return false
     }
@@ -77,5 +101,10 @@ class LocationService : NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         self.shots.insert(contentsOf: newShots, at: 0)
+        self.save()
+    }
+    
+    func save() {
+        print (FilesystemHelper.store(self, filename: LocationService.filename))
     }
 }

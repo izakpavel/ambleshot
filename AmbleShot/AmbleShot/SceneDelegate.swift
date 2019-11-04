@@ -20,8 +20,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
         // Create the SwiftUI view that provides the window contents.
-        let locationService = LocationService()
-        let mainView = ShotListView().environmentObject(locationService)
+        let locationService = FilesystemHelper.retrieve(LocationService.filename, as: LocationService.self)
+        let mainView = ShotListView().environmentObject(locationService ?? LocationService())
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
